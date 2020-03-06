@@ -239,7 +239,7 @@ cat(
 )
 
 # test the null H^D: theta.O * (1 - rho) <= theta.R
-rhos <- seq(-1, 1, 0.1)
+rhos <- seq(-1, 1, 0.01)
 df.decline <- foreach(rho = rhos, .combine = "rbind") %do% {
   if (rho == 1) {
     # same as testing theta.R >= 0, which gives p-value complement to testing

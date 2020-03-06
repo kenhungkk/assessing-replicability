@@ -1,4 +1,5 @@
-\documentclass[11pt]{article}
+\documentclass[aoas, preprint]{imsart}
+
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
@@ -18,10 +19,17 @@
 \usepackage[linesnumbered, ruled]{algorithm2e} % algorithm2e must be loaded before cleveref
 \usepackage{cleveref}
 \usepackage{subcaption}
+\usepackage{tabularx}
 \usepackage{tikz}
 \usetikzlibrary{calc}
 \usepackage{verbatim}
 \usepackage{xcolor}
+
+% arXiv number
+\arxiv{arXiv:1903.08747}
+
+% custom definitions
+\startlocaldefs
 
 \interfootnotelinepenalty=10000
 
@@ -70,24 +78,33 @@
 \newcommand{\lest}{\le_\text{st}}
 \newcommand{\gest}{\ge_\text{st}}
 
-\newcommand{\WFcomment}[1]{{\color{red!40!gray} (WF: #1)}}
-\newcommand{\KHcomment}[1]{{\color{green!40!gray} (KH: #1)}}
-
-% Uncomment this line to get rid of my comments
-% \renewcommand{\WFcomment}[1]{}
-% \renewcommand{\KHcomment}[1]{}
+\endlocaldefs
 
 \graphicspath{{./fig/}}
 
 \begin{document}
 
+\begin{frontmatter}
+
 \title{Statistical Methods for Replicability Assessment}
-\date{\today}
-\author{
-  Kenneth Hung\thanks{Department of Mathematics, University of California, Berkeley} \and
-  William Fithian\thanks{Department of Statistics, University of California, Berkeley}
-}
-\maketitle
+\runtitle{Statistical Methods for Replicability Assessment}
+
+\begin{aug}
+  \author{\fnms{Kenneth} \snm{Hung}\corref{}\ead[label=e1]{kenhung@berkeley.edu}}
+  \and
+  \author{\fnms{William} \snm{Fithian}\ead[label=e2]{wfithian@berkeley.edu}}
+
+  \runauthor{K. Hung and W. Fithian}
+
+  \affiliation{University of California, Berkeley}
+
+  \address{Department of Mathematics\\ 951 Evans Hall, Suite 3840\\ Berkeley, CA 94720-3840\\
+  \printead{e1}}
+
+  \address{Department of Statistics\\ 301 Evans Hall\\ Berkeley, CA 94720\\
+          \printead{e2}}
+
+\end{aug}
 
 \begin{abstract}
   Large-scale replication studies like the Reproducibility Project: Psychology (RP:P) provide invaluable systematic data on scientific replicability, but most analyses and interpretations of the data fail to agree on the definition of ``replicability'' and disentangle the inexorable consequences of known selection bias from competing explanations. We discuss three concrete definitions of replicability based on
@@ -96,17 +113,34 @@
     \item how effective replication studies are in reproducing whatever true effect size was present in the original experiment, and
     \item whether true effect sizes tend to diminish in replication.
   \end{inlinelist}
-  We apply techniques from multiple testing and post-selection inference to develop new methods that answer these questions while explicitly accounting for selection bias. Re-analyzing the RP:P data, we estimate that $22$ out of $68$ ($32\%$) original directional claims were false (upper confidence bound $47\%$); by comparison, we estimate that among claims significant at the stricter significance threshold $0.005$, only $2.2$ out of $33$ ($7\%$) were directionally false (upper confidence bound $18\%$). In addition, we compute selection-adjusted confidence intervals for the difference in effect size between original and replication studies and, after adjusting for multiplicity, identify five ($11\%$) which exclude zero (exact replication). We estimate that the effect size declined by at least $20\%$ in the replication study relative to the original study in $16$ of the $46$ ($35\%$) study pairs (lower confidence bound $11\%$). Our methods make no distributional assumptions about the true effect sizes.
+  We apply techniques from multiple testing and post-selection inference to develop new methods that answer these questions while explicitly accounting for selection bias. Our analyses suggest that the RP:P dataset is largely consistent with publication bias due to selection of significant effects. The methods in this paper make no distributional assumptions about the true effect sizes.
 \end{abstract}
+
+\begin{keyword}[class=MSC]
+\kwd[Primary ]{62F03}
+\kwd[; secondary ]{62P25}
+\end{keyword}
+
+\begin{keyword}
+\kwd{replicability}
+\kwd{multiple testing}
+\kwd{post-selection inference}
+\kwd{publication bias}
+\kwd{meta-analysis}
+\end{keyword}
+
+\end{frontmatter}
 
 \section{Introduction}
 \label{sec:intro}
 
   Growing concerns about selection bias, $p$-hacking, and other questionable research practices (QRPs) have raised urgent questions about the reliability of scientific findings. While concerns about replicability cut across scientific disciplines, psychologists have led large-scale efforts to assess the replicability of their own field. The largest and most systematic of these efforts has been the Reproducibility Project:\ Psychology (RP:P),\footnote{In some parts of the literature, ``reproducibility'' has taken on a computational connotation, meaning only that other scientists can repeat the analysis using the original study's data; we will lean toward the more unambiguous term ``replicability.''} a major collaboration by several hundred psychologists to replicate a representative sample of 100 studies published in 2008 in three top psychology journals, {\em Psychological Science}, {\em Journal of Personality and Social Psychology}, and {\em Journal of Experimental Psychology: Learning, Memory, and Cognition}.\footnote{The test statistics, effect sizes and most pertinent information are all publicly available on at the Open Science Foundation website at \url{https://osf.io/ezcuj/}.}
 
-  While the RP:P dataset is an invaluable resource, scientists disagree on how to quantify or measure replicability \citep{Goodman:2016bo,Amrhein:2017en}. \citet[OSC;][]{OpenScienceCollaboration:2015cn} reported three main metrics: it found that $64\%$ ($= 1 - 36\%$) of the replication studies did not find statistically significant results in the same direction as the original studies, that $53\%$ ($= 1 - 47\%$) of $95\%$ confidence intervals for the replication studies do not contain the point estimates for their corresponding original studies, and that $83\%$ of the effect size estimates declined from original studies to replications. All three summary statistics were widely reported as indicating a dire crisis for the credibility of experimental psychology research. For example, the {\em Washington Post} reported that RP:P ``affirms that the skepticism [of published results] was warranted'' \citep{Achenbach:2015vi}; the {\em Economist} noted that OSC ``managed to replicate satisfactorily the results of only $39\%$ of the studies investigated'' \citep{Anonymous:uoQKTVTm}; and the {\em New York Times} reported that ``more than half of the findings did not hold up when retested'' \citep{Carey:2015wp}.
+  While the RP:P dataset is an invaluable resource, scientists disagree on how to quantify or measure replicability \citep{Goodman:2016bo,Amrhein:2017en}. \citet[OSC;][]{OpenScienceCollaboration:2015cn} reported three main metrics: it found that $64\%$ ($= 1 - 36\%$) of the replication studies did not find statistically significant results in the same direction as the original studies, that $53\%$ ($= 1 - 47\%$) of $95\%$ confidence intervals for the replication studies do not contain the point estimates for their corresponding original studies, and that $83\%$ of the effect size estimates declined from original studies to replications. All three summary statistics were widely reported as indicating a dire crisis for the credibility of experimental psychology research. For example, the {\em Washington Post} reported that RP:P ``affirms that the skepticism [of published results] was warranted'' \citep{Achenbach:2015vi}; the {\em Economist} noted that OSC ``managed to replicate satisfactorily the results of only $39\%$ of the studies investigated'' \citeyearpar{Anonymous:uoQKTVTm}; and the {\em New York Times} reported that ``more than half of the findings did not hold up when retested'' \citep{Carey:2015wp}.
 
   This negative gloss was challenged in a comment by \citet{Gilbert:2016he}, who criticized both the fidelity of some of the replications' experimental designs and the aptness of the metrics reported by \citet{OpenScienceCollaboration:2015cn}. In particular, \citeauthor{Gilbert:2016he}\ pointed out that, because there is sampling error in the replication point estimates, we should not expect $95\%$ of the estimates to fall into the replication confidence intervals even under ideal conditions. Moreover, any small or large variations in the true effect sizes between the original and replication studies could further deflate the expected fraction of ``successful replications,'' as measured in this way. \citeauthor{Gilbert:2016he}\ concluded that ``OSC seriously underestimated the reproducibility of psychological science,'' sparking further debate between defenders of OSC's conclusions \citep{Anderson:2016gs,Srivastava:2016,Nosek:2016} and the critics \citep{Gilbert:2016uv,Gilbert:2016th}.\footnote{While much of the ensuing discussion focused on the question of whether the confidence interval metric $53\%$ is too pessimistic, analogous criticisms apply to the ``significant replications'' metric of $64\%$ as well: the replication studies could be underpowered even when a true effect is present.}
+
+\subsection{Three definitions of replicability}
 
   To determine whether OSC truly underestimated replicability, we must first pin down the rather slippery question of what ``replicability'' actually is. Although the three metrics used by OSC are simply descriptive statistics that do not purport to estimate any explicitly defined underlying quantity, we can loosely characterize the $64\%$, $53\%$ and $83\%$ numbers respectively as qualitative answers to three questions:
   \begin{description}
@@ -116,7 +150,7 @@
   \end{description}
   The first question concerns a type of {\em false discovery rate} (FDR) of the statistical hypotheses, viewing the field of social psychology as a collective enterprise in large-scale multiple testing: it quantifies the fraction of findings that would be confirmed if the exact same studies could be carried out again with much larger samples from the same populations. The second question concerns a basic form of repeatability: whether scientists are typically successful in closely replicating each others' experimental conditions, so that the true effect being measured is stable across different experiments. The third question builds upon the second question: whether true effect sizes tend systematically to attenuate in replications. An overall trend of declining true effects could suggest various interpretations, including systematic biases in the original experiments or failures by the replication teams to reproduce key experimental conditions that produced the original effects.
 
-  As we will see, however, none of the three reported metrics can be taken at face value as {\em estimates} of the answers to the corresponding questions, due to the confounding factor of pervasive selection bias. By using techniques from multiple testing and post-selection inference, we will develop methods to rigorously address these questions without assuming a model for the prior distribution of effect sizes. For the RP:P data we estimate the rate of false directional claims at roughly $32\%$ among studies with $p < 0.05$, which would be considered unacceptably high in most multiple testing applications. By contrast, among studies with $p < 0.005$, a lower threshold proposed by \citet{Benjamin:2018gh}, our estimate drops to $7\%$, with an upper confidence bound of $18\%$. We also compute confidence intervals for the effect shift in each individual study pair and find that, after adjusting for multiplicity, about $11\%$ of the intervals exclude zero, an idealized null hypothesis of perfect replication. For effect decline, we find in aggregate that $35\%$ of the true effects declined, and $35\%$ declined by at least $20\%$.
+  As we will see, however, none of the three reported metrics can be taken at face value as {\em estimates} of the answers to the corresponding questions, due to the confounding factor of pervasive selection bias. By using techniques from multiple testing and post-selection inference, we will develop methods to rigorously address these questions without assuming a model for the prior distribution of effect sizes. For the RP:P data we estimate the rate of false directional claims at roughly $32\%$ among studies with $p < 0.05$, which would be considered unacceptably high in most multiple testing applications. By contrast, among studies with $p < 0.005$, a lower threshold proposed by \citet{Benjamin:2018gh}, our estimate drops to $7\%$, with an upper confidence bound of $18\%$. We also compute confidence intervals for the effect shift in each individual study pair and find that, after adjusting for multiplicity, about $11\%$ of the intervals exclude zero, an idealized null hypothesis of perfect replication. For effect decline, we find in aggregate that $35\%$ of the true effects declined, and $22\%$ declined by at least $25\%$.
 
   In addressing each question, we define our estimands in terms of the true effects present in the statistical populations actually sampled in each study. Because some studies may be biased or lack external validity --- for example, because of flaws in the study design, or because survey participants are unrepresentative of the broader population of scientific interest --- these effect sizes may not reflect the latent scientific quantities the experiments purport to measure. Uncovering such discrepancies is beyond the reach of data analysis alone, but we should keep them in mind as we interpret the results.
 
@@ -253,9 +287,29 @@
   \[
     H_i^{D,\rho}:\; S_i \,\cdot\, \theta_{i,R} \ge S_i \,\cdot\, (1 - \rho) \theta_{i,O}.
   \]
-  If $S_i = +1$ and $\rho=0.2$, for example, rejecting $H_i^{D,\rho}$ amounts to an assertion that $\theta_{i,R} < 0.8 \,\theta_{i,O}$, i.e. the true effect declined by more than $20\%$, or is negative.
+  If $S_i = +1$ and $\rho=0.25$, for example, rejecting $H_i^{D,\rho}$ amounts to an assertion that $\theta_{i,R} < 0.75 \,\theta_{i,O}$, i.e. the true effect declined by more than $25\%$, or is negative.
 
   In particular, if $\rho=0$ then $H_i^{D,0}$ is a one-sided version of $H_i^E$, and when $\rho=1$, $H_i^{D,1}$ is equivalent to $H_i^{S,R}$. We can subsequently ask how many of $H_i^{D,\rho}$ are false: another multiple testing problem. We provide two estimators (one overestimate and one underestimate) and confidence interval for the proportion of false $H_i^{D,\rho}$.
+
+  To facilitate the rest of the paper, we recapitulate the notations above in \Cref{tbl:notation}.
+  \begin{table}[htbp]
+    \centering
+    \begin{tabularx}{\textwidth}{lX}
+      \toprule
+      Symbol & Meaning \\
+      \midrule
+      $\theta_{i,O}$, $\theta_{i,R}$ & True effect sizes in the original and replication $i$-th studies \\
+      $\htheta_{i,O}$, $\htheta_{i,R}$ & Effect size estimates in the original and replication $i$-th studies \\
+      $\sigma_{i,O}$, $\sigma_{i,R}$ & Standard errors in the original and replication $i$-th studies \\
+      $S_i$ & Sign of the original $i$-th study \\
+      $H_i^{S,O}$, $H_i^{S,R}$ & Hypothesis that a type S error has occurred in the original and replication $i$-th studies  \\
+      $H_i^E = H_i^{E,0}$, $H_i^{E,\delta}$ & Hypothesis that the true effect has shifted by $\delta$ from the original to the replication $i$-th study \\
+      $H_i^{D,\rho}$ & Hypothesis that the true effect size has declined by no more than the fraction $\rho$ \\
+      \bottomrule
+    \end{tabularx}
+    \caption{Summary of notations introduced.}
+  \label{tbl:notation}
+  \end{table}
 
 \subsection{Data-dependent hypotheses and conditional inference}
 
@@ -288,17 +342,16 @@
 
   Since we need a well-defined notion of direction to consider the proportion of false directional claims, we restrict our attention to univariate tests, namely $z$-, $t$-, $F(1, \cdot)$-tests or correlations. Thus, studies that are not univariate or have $p$-values greater than $\ao = 0.05$ are discarded: our estimates and analyses below consider only the $m = 68$ remaining studies with univariate structure and conventionally significant original $p$-values.
 
-
 \subsection{Selection bias model}
-  Model~\eqref{eq:trunc-model} assumes that results are only published if they achieved statistical significance at some conventional threshold level $\ao$, which is $0.05$ in our data. While this assumption is not literally true in the case of RP:P since some original $p$-values are above $0.05$, we note that the model can be relaxed to the following milder assumption:
+  Model~\eqref{eq:trunc-model} assumes that results are only published if they achieved statistical significance at some conventional threshold level $\ao$, which is $0.05$ in our data. While this assumption is not true in the case of RP:P since some original $p$-values are above $0.05$, we note that the model can be relaxed to the following milder assumption:
   \begin{assumption}
     \label{ass:sig-enough}
-    $p_O < \ao$ is ``significant enough'': that is, not all results with significant $p$-values are necessarily published, but a result with $p_O < \ao$ would have been equally likely to be published (or selected for replication), had the $p$-value taken on some other statistically significant value.
+    $p_O < \ao$ is ``significant enough'': a result with $p_O < \ao$ would be equally likely to be published (or selected for replication), if the $p$-value were some other statistically significant value.
   \end{assumption}
 
-  If \Cref{ass:sig-enough} holds, then we can model the original test statistics as following their theoretical distribution, truncated to the event where the corresponding $p$-values are below $\ao$, as in Model~\ref{eq:trunc-model}.
+  \Cref{ass:sig-enough} allows some significant $p$-values to go unpublished. If it holds, then we can model the original test statistics as following their theoretical distribution, truncated to the event where the corresponding $p$-values are below $\ao$, as in Model~\ref{eq:trunc-model}.
 
-  Note that \Cref{ass:sig-enough} contemplates a fairly straightforward mechanism for selection on statistical significance, which may not be adequate to describe the effects of more complex and difficult-to-model QRPs. In particular, $p$-hacking --- the iterative tweaking of an analysis until the $p$-value drops below the researcher's desired significance level $\ao$ --- is commonly suspected to produce a pileup of $p$-values just below the significance threshold \citep[see e.g.][]{Simonsohn:2014fa}. Because $p$-hacking is such a vaguely defined practice, it is unclear how we might incorporate it into our model, but in any case there is no evidence of a pileup just below $0.05$ in the original RP:P studies (see \Cref{fig:fdp-original}).
+  Note that \Cref{ass:sig-enough} contemplates a fairly straightforward mechanism for selection on statistical significance, which may not be adequate to describe the effects of more complex and difficult-to-model QRPs. In particular, $p$-hacking --- the iterative tweaking of an analysis until the $p$-value drops below the researcher's desired significance level $\ao$ --- is commonly suspected to produce a pileup of $p$-values just below the significance threshold \citep[see e.g.][]{Simonsohn:2014fa}. Because $p$-hacking is such a vaguely defined practice, it is unclear how we might incorporate it into our model, but in any case there is no evidence of a pileup just below $0.05$ in the original RP:P studies (see \Cref{fig:fdp-original}). We will reconsider the validity of \Cref{ass:sig-enough} in \Cref{sec:discussion}.
 
 \subsection{False directional claims}
 
@@ -351,7 +404,7 @@
 
   Additionally, we can exploit \eqref{eq:Bgest} to obtain an upper confidence bound for the directional FDP, by testing the hypothesis $H_0:\; V \ge v_0$, a partial conjunction hypothesis investigated in \citet{Heller:2007}. Here we combine only the coarse information of whether each $p$-value is greater than $\lambda$,\footnote{More precisely, we count number of $p$-values that are greater than $\lambda$ and consider its distribution under the partial conjunction null hypothesis} and reject for small values of $B$. We can compute the largest $v_0$ such that the test still accepts, which gives an upper confidence bound of $V$. Dividing this bound by $R$ gives an upper confidence bound for the directional FDP.
 
-  \paragraph{Directional FDP at smaller thresholds} One proposal to address the replicability crisis is to lower the conventional significance threshold from $\ao=0.05$ to some smaller value $\alpha$, such as $0.005$ \citep{Benjamin:2018gh}. As suggested by \citet{Goodman:2013kj}, an empirical method to evaluate the hypothetical scenario with a smaller threshold can be helpful. We now discuss methods for inference on the directional FDP for those studies with $p_O < \alpha < \ao$, based on comparing the number of adjusted $p$-values below $\alpha$ with the number above $\lambda\ao$, for some $\lambda > \alpha/\ao$. We call this method the {\em external comparison method} in contrast to the earlier {\em internal comparison method}. This method will be less conservative as we are not constrained to only using the $p$-values in $[0, \alpha)$.
+  \paragraph{Directional FDP at smaller thresholds} One proposal to address the replicability crisis is to lower the conventional significance threshold from $\ao=0.05$ to some smaller value $\alpha$, such as $0.005$ \citep{Benjamin:2018gh}. As suggested by \citet{Goodman:2013kj}, an empirical method to evaluate the hypothetical scenario with a smaller threshold can be helpful. We now discuss methods for inference on the directional FDP for those studies with $p_O < \alpha < \ao$, based on comparing the number of adjusted $p$-values below $\alpha$ with the number above $\lambda\ao$, for some $\lambda > \alpha/\ao$. We call this method the {\em external comparison method} in contrast to the earlier {\em internal comparison method} that bases on \eqref{eq:Bgest}. This method will be less conservative as we are not constrained to only using the $p$-values in $[0, \alpha)$.
   
   Let $N \le m$ denote the total number of original $p$-values in $[0,\alpha) \cup [\lambda\ao, \ao)$ (or equivalently, the number of adjusted $p$-values in $[0,\alpha') \cup [\lambda, 1)$ for $\alpha' = \alpha/\ao$). \Cref{tbl:big-small} classifies these $N$ studies according to whether $H_i^{S,O}$ is true and whether the adjusted $p$-value is larger than $\lambda$ or smaller than $\alpha'$. The numbers of false directional claims and all directional claims under the hypothetical threshold are $V_\alpha$ and $R_\alpha$, respectively. Auxiliary counts, $T_\alpha$ and $W$, are defined according to \Cref{tbl:big-small} as well. The directional FDP, $V_\alpha / R_\alpha$, remains as our quantity of interest.
   
@@ -496,7 +549,7 @@
     Leveraging the fact that $\eta' \eta_\perp = 0$, we reparametrize the joint distribution of $(Z_1, Z_2)$ under the null such that $\delta$ is a parameter, i.e.
     \[
       \begin{bmatrix} D \\ M \end{bmatrix} =
-      \begin{bmatrix} \eta' \mu \\ \eta_\perp' \mu \end{bmatrix}
+      \begin{bmatrix} \eta' Z \\ \eta_\perp' Z \end{bmatrix}
       \sim N\left(
       \begin{bmatrix} \delta \\ \eta_\perp' \mu \end{bmatrix},
       \begin{bmatrix}
@@ -604,7 +657,7 @@
       \caption{Histogram of the replication $p$-values.}
     \label{fig:fdp-replication}
     \end{subfigure}
-    \caption{Histograms of $p$-values. We estimate the expected number of true nulls in each bin by the method from \citet{Storey:2002vj}, shown by the horizontal red line. A net excess of $p$-values above this line means false directional claims.}
+    \caption{Method from \citet{Storey:2002vj} as demonstrated using histograms of $p$-values. We estimate the number of true nulls by conservatively assuming that every hypothesis right of the vertical red line to be true. Since the $p$-value under the null is superuniform, on average there are fewer null hypotheses left of the line than right of the line. Our overestimate of the number of true nulls in each bin is shown by the horizontal red line. A net excess of $p$-values above this line means false directional claims.}
   \end{figure}
 
   We proceeded to evaluate the proposal to reduce the statistical significance threshold \citep{Benjamin:2018gh}. We considered three candidates for the new threshold, $0.001$, $0.005$ and $0.01$, using the external comparison method. The directional FDP estimates and upper confidence bounds are given in \Cref{tbl:fdp-sim}.
@@ -661,7 +714,7 @@
   \label{fig:effect-decline}
   \end{figure}
 
-  More generally, we used the hypothesis $H^{D,\rho}$ to estimate the proportion of effect sizes that declined by at least a fraction of $\rho$. The underestimate, overestimate and the $90\%$ confidence interval are given in \Cref{fig:effect-decline-range}. For example, we estimate that $16$ of the $46$ effect sizes ($35\%$ (with a $95\%$ lower confidence bound $11\%$) decreased by at least $20\%$, even after adjusting for selection on measurement noise. Note that this does not exclude explanations by other forms of selection, e.g.\ selecting a large effect when there is a random effect.
+  More generally, we used the hypothesis $H^{D,\rho}$ to estimate the proportion of effect sizes that declined by at least a fraction of $\rho$. The underestimate, overestimate and the $90\%$ confidence interval are given in \Cref{fig:effect-decline-range}. For example, we estimate that $10$ of the $46$ effect sizes ($22\%$) decreased by at least $25\%$, even after adjusting for selection on measurement noise. Note that this does not exclude explanations by other forms of selection, e.g.\ selecting a large effect when there is a random effect.
   \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{effect-decline-range}
@@ -711,7 +764,7 @@
 
   As large-scale replicability studies are becoming more common in assessing the ``well-being'' of a scientific domain, this paper serves as a stepping stone for improving methodologies in future replicability studies.
 
-  First, selection for significance is an inevitable consequence of the current scientific process. Our adjustments for selection is admittedly crude, but necessitated by the limitations in the given data. With more available information, a better model for selection can be used. For example, with the advancement of preregistration, we can use the external comparison method to produce less conservative estimates of the directional FDP at level $\alpha = 0.05$ if we have more information about statistically nonsignificant studies. With more replications carried out, we can estimate the publication bias model in \citet{Andrews:2018vh} more precisely; together with higher powered design in replications \citep[e.g.][]{Camerer:2018de}, we can enhance the precision of our estimators and power of our tests.
+  First, selection for significance is an inevitable consequence of the current scientific process. Our adjustments for selection allows not only better analysis, but also more informed design of future replication studies, e.g.\ better power calculations for and sizing of replications. While these adjustments are admittedly crude, they are necessitated by the limitations in the given data. With more available information, a better model for selection can be used. For example, with the advancement of preregistration, we can use the external comparison method to produce less conservative estimates of the directional FDP at level $\alpha = 0.05$ if we have more information about statistically nonsignificant studies. With more replications carried out, we can estimate the publication bias model in \citet{Andrews:2018vh} more precisely, which allows different propensity for publication for different statistical significant $p$-values as opposed to \Cref{ass:sig-enough}. Together with higher powered design in replications \citep[e.g.][]{Camerer:2018de}, we can enhance the precision of our estimators and power of our tests.
 
   Second, we emphasized the importance of statistical formality. Our proposed criteria are based on clearly defined parameters. While these criteria may not suit all needs in future replicability studies, additional formal hypotheses can also be analyzed under the post-selection inference framework similarly.
 
@@ -721,16 +774,19 @@
 
   A git repository containing with the code generating the images in this article is available at \url{https://github.com/kenhungkk/assessing-replicability.git}.
 
-\section*{Supplement}
-
-  The supplement is available in the git repository, or directly on \url{https://github.com/kenhungkk/assessing-replicability/raw/public/supplement.pdf}.
-
 \section*{Acknowledgment}
 
-  We thank Marcel A L M van Assen, Yoav Benjamini, Dean Eckles, Philip B Stark, Jacob Steinhardt, Jonathan Taylor, Alexa Tulett, Stefan Wager, Daniel Yekutieli, and Bin Yu for helpful comments and discussions.
+  We thank Marcel A L M van Assen, Yoav Benjamini, Dean Eckles, Philip B Stark, Jacob Steinhardt, Jonathan Taylor, Alexa Tulett, Stefan Wager, Daniel Yekutieli, and Bin Yu for helpful comments and discussions. In addition, we are grateful to our two anonymous reviewers for their helpful suggestions which have improved the paper.
+
+\begin{supplement}
+  \sname{Supplement A}\label{suppA}
+  \stitle{Supplement to ``Statistical Methods for Replicability Assessment''}
+  \slink[url]{https://github.com/kenhungkk/assessing-replicability/raw/public/supplement.pdf}
+  \sdescription{We evaluate our approximation of $t$-distributions by normal distributions, as well as detail considerations made for individual studies.}
+\end{supplement}
 
 \Urlmuskip=0mu plus 1mu\relax
-\bibliographystyle{plainnat}
+\bibliographystyle{imsart-nameyear}
 \bibliography{papers,additional}
 
 \end{document}
